@@ -40,7 +40,7 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
       idx[i*m+j]=i;
     }
   }
-  //test idx
+/*  //test idx
   //test Ynorms
   printf("IDX:\n" );
   for (int i = 0; i < n*m; i++) {
@@ -50,6 +50,7 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
     // }
     printf("]\n");
   }
+  */
 
   //Compute the distances matrix D
   // (D = sqrt(sum(X.^2,2) - 2 * X*Y.' + sum(Y.^2,2).');)
@@ -61,7 +62,7 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
     sortDistancesAndIdxColumns((D+i),(idx+i),0,n-1,k, m );
   }
 
-
+/* test
     printf("I did the sorting\n");
     //test new D , idx
     printf("NEW D  before realloc:\n" );
@@ -72,22 +73,22 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
       }
       printf("]\n");
     }
+    */
 
-
-
-  // D= (double *) realloc(D,k*m * sizeof(double));
-  // idx=(int *) realloc(idx,k*m * sizeof(int));
+  //reallocating D and idx , in smaller sizes , to avoid memory leaks
+  D= (double *) realloc(D,k*m * sizeof(double));
+  idx=(int *) realloc(idx,k*m * sizeof(int));
 
 
 
   //declaring result
-  knnresult result;
-  // if(!result){
-  //   printf("Couldn't Allocate Memory!\n" );
-  //   exit(1);
-  // }
+  knnresult * result=(knnresult *)malloc(sizeof(knnresult));
+  if(!result){
+    printf("Couldn't Allocate Memory!\n" );
+    exit(1);
+  }
 
-  //test new D , idx
+  /*//test new D , idx
   printf("NEW D after realloc:\n" );
   for (int i = 0; i < k; i++) {
     printf("[ ");
@@ -115,9 +116,11 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
     }
     printf("]\n");
   }
-  result. ndist =  (double *)malloc(k*m * sizeof(double));
-  result. nidx= (int *)malloc(k*m * sizeof(int));
 
+  */
+  result-> ndist =  (double *)malloc(k*m * sizeof(double));
+  result-> nidx= (int *)malloc(k*m * sizeof(int));
+  /*we dont need it for now
   // for(int i=0; i < k ; i++){
   //   for(int j =0 ; j<m ;j++)
   //     result. ndist[j*k+i]=D[i*m+j];
@@ -127,26 +130,27 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
   //   for(int j =0 ; j<m ;j++)
   //     result. nidx[j*k+i]=idx[i*m+j];
   // }
+  */
 
 
   for(int i=0; i < k*m ; i++){
-      result. ndist[i]=D[i];
+      result-> ndist[i]=D[i];
   }
 
   for(int i=0; i < k*m ; i++){
-      result. nidx[i]=idx[i];
+      result-> nidx[i]=idx[i];
   }
   // result. nidx = idx;
   // result. ndist= D;
-  result . m =m;
-  result . k =k;
+  result -> m =m;
+  result -> k =k;
 
-  //test new D , idx
+/*  //test new D , idx
   printf(" result NEW D after realloc:\n" );
   for (int i = 0; i < k; i++) {
     printf("[ ");
     for (int  j = 0; j < m; j++) {
-      printf("%lf ",  result. ndist[i*m+j]);
+      printf("%lf ",  result-> ndist[i*m+j]);
     }
     printf("]\n");
   }
@@ -154,10 +158,11 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
   for (int  i = 0; i < k; i++) {
     printf("[ ");
     for ( int j = 0; j < m; j++) {
-      printf("%d ",result.nidx[i*m+j]);
+      printf("%d ",result->nidx[i*m+j]);
     }
     printf("]\n");
   }
+  */
 
 
 
@@ -165,7 +170,7 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
 
   free(D);
   free(idx);
-  return result;
+  return *result;
 }
 
 
@@ -204,7 +209,7 @@ void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int 
       }
       free(xPow2);
 
-      //test Xnorms
+    /*  //test Xnorms
       printf("Xnorms:\n" );
       for (int i = 0; i < n; i++) {
         printf("[ ");
@@ -213,6 +218,7 @@ void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int 
         // }
         printf("]\n");
       }
+      */
 
       // sum(Y.^2,2)
         //Y.^2
@@ -241,7 +247,7 @@ void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int 
       }
       free(yPow2);
 
-      //test Ynorms
+  /*    //test Ynorms
       printf("Ynorms:\n" );
       for (int i = 0; i < m; i++) {
         printf("[ ");
@@ -250,6 +256,8 @@ void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int 
         // }
         printf("]\n");
       }
+
+      */
 
 
 
@@ -271,7 +279,7 @@ void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int 
       cblas_dgemm(order,transx,transy, n, m, d, alpha, X, ldx, Y, ldy, beta, euclideanDistances, ldEd );
 
 
-    //test
+  /*  //test
     printf("euclideanDistances arr:\n" );
     for (int i = 0; i < n*m; i++) {
       printf("[ ");
@@ -281,11 +289,13 @@ void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int 
       printf("]\n");
     }
 
+    */
+
     //D = sqrt(sum(X.^2,2) - 2 * X*Y.' + sum(Y.^2,2).');
     //Computind each cell in D array
     for(int i=0; i<n ; i++){
       for (int j = 0; j < m; j++) {
-        D[i*m+j]=sqrt(xNorms2[i]+ euclideanDistances[i*m+j] + yNorms2[j]);
+        D[i*m+j]=sqrt( xNorms2[i] + euclideanDistances[i*m+j] + yNorms2[j] );
       }
     }
     //free some memory from the heap
@@ -293,7 +303,7 @@ void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int 
     free(xNorms2);
     free(yNorms2);
 
-    //test D
+  /*  //test D
     printf("D:\n" );
     for (int i = 0; i < n*m; i++) {
       printf("[ ");
@@ -311,6 +321,7 @@ void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int 
       }
       printf("]\n");
     }
+  */
 
 
 }
