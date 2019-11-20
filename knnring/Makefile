@@ -24,7 +24,7 @@ SHELL := /bin/bash
 CC = gcc-7
 
 # define compile-time flags #-Wall
-CFLAGS = -Wall -O2 -lblas # -pthread -fcilkplus -fopenmp
+CFLAGS = -Wall -lopenblas -lblas  -O2 -pthread #-fcilkplus -fopenmp
 # CFLAGS =   -pthread -fcilkplus -fopenmp
 # define any directories containing header files
 
