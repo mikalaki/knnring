@@ -3,7 +3,7 @@
 #include <math.h>
 #include <float.h>
 #include "knnring.h"
-#include "cblas.h"
+#include "cblas-openblas.h"
 #include "limits.h"
 
   //Getting variables to use as specific blas routines
@@ -118,8 +118,11 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
   }
 
   */
-  result-> ndist =  (double *)malloc(k*m * sizeof(double));
-  result-> nidx= (int *)malloc(k*m * sizeof(int));
+
+  result-> ndist =  D;
+  result-> nidx= idx;
+  // result-> ndist =  (double *)malloc(k*m * sizeof(double));
+  // result-> nidx= (int *)malloc(k*m * sizeof(int));
   /*we dont need it for now
   // for(int i=0; i < k ; i++){
   //   for(int j =0 ; j<m ;j++)
@@ -133,13 +136,13 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
   */
 
 
-  for(int i=0; i < k*m ; i++){
-      result-> ndist[i]=D[i];
-  }
-
-  for(int i=0; i < k*m ; i++){
-      result-> nidx[i]=idx[i];
-  }
+  // for(int i=0; i < k*m ; i++){
+  //     result-> ndist[i]=D[i];
+  // }
+  //
+  // for(int i=0; i < k*m ; i++){
+  //     result-> nidx[i]=idx[i];
+  // }
   // result. nidx = idx;
   // result. ndist= D;
   result -> m =m;
@@ -168,8 +171,8 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
 
 
 
-  free(D);
-  free(idx);
+  // free(D);
+  // free(idx);
   return *result;
 }
 
@@ -180,8 +183,8 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
 void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int d){
   // D = sqrt(sum(X.^2,2) - 2 * X*Y.' + sum(Y.^2,2).');
 
-      // sum(X.^2,2)
-        //X.^2
+      // // sum(X.^2,2)
+      //   //X.^2
       double * xPow2=(double *)malloc(n*d*sizeof(double));
       if(!xPow2){
         printf("Couldn't Allocate Memory!\n" );
@@ -190,16 +193,14 @@ void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int 
 
       //getting the x^2
       for(int i=0;i<n*d;i++){
-        xPow2[i]=pow( X[i],2);
+        xPow2[i]=X[i]*X[i];
       }
-
-        // sum(X.^2,2)
+      // sum(X.^2,2)
       double * xNorms2=(double *)malloc(n*sizeof(double));
       if(!xNorms2){ //checking for memory allocation
         printf("Couldn't Allocate Memory!\n" );
         exit(1);
       }
-
       // compute the norms (^2) of the points in X
       for(int i=0;i<n;i++){
         xNorms2[i]=0;
@@ -208,6 +209,18 @@ void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int 
         }
       }
       free(xPow2);
+
+      ////////////////// BLASSS METHOD////////////////////////
+      // double * xNorms2=(double *)malloc(n*sizeof(double));
+      // for(int i=0;i<n;i++){
+      //   xNorms2[i]= cblas_ddot(d,X+n*d,1,X+n*d,1);
+      //   // xNorms2[i]=pow( xNorms2[i],2);
+      // }
+
+
+      //////////////////////////////////////////
+
+
 
     /*  //test Xnorms
       printf("Xnorms:\n" );
@@ -227,9 +240,8 @@ void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int 
         printf("Couldn't Allocate Memory!\n" );
         exit(1);
       }
-
       for(int i=0;i<m*d;i++){
-        yPow2[i]=pow( Y[i],2);
+        yPow2[i]=Y[i]*Y[i];
       }
 
       // sum(Υ.^2,2)
@@ -246,6 +258,13 @@ void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int 
         }
       }
       free(yPow2);
+
+      // //BLASSS METHODDD
+      // double * yNorms2=(double *)malloc(m*sizeof(double));
+      // for(int i=0;i<m;i++){
+      //   yNorms2[i]= cblas_ddot(d,Y+m*d,1,Y+m*d,1);
+        // xNorms2[i]=pow( xNorms2[i],2);
+      // }
 
   /*    //test Ynorms
       printf("Ynorms:\n" );
