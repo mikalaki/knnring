@@ -88,7 +88,6 @@ int validateResult( knnresult knnres, double * corpus, double * query,
       maxDist = knnres.ndist[i*m + j];
 
     } /* for (k) -- reported nearest neighbors */
-
     /* now maxDist should have distance to kth neighbor */
 
     /* check all un-visited points */
@@ -101,13 +100,7 @@ int validateResult( knnresult knnres, double * corpus, double * query,
         double distxy = dist( corpus, query, i, j, d, n, m );
 
         /* point cannot be closer than kth distance */
-        if ( distxy < maxDist ) {printf("I BREAK IN 3\n" );
-        printf("distxy= %d  \n",distxy );
-        printf("maxDist= %d  \n",maxDist );
-          printf("i= %d, j=%d  \n",i,j );
-
-
-        return 0;}
+        if ( distxy < maxDist ) {printf("I BREAK IN 3\n" ); return 0;}
 
       } /* if (!visited[i]) */
 
@@ -133,16 +126,15 @@ int main(){
   clock_t t;
   double time_taken;
 
-  int n=100000;                    // corpus
-  int m=500;                    // query
+  int n=1000;                    // corpus
+  int m=n;                    // query
   int d=300;                      // dimensions
   int k=50;                     // # neighbors
   int i=0;
   int j=0;
 
   double  * corpus = (double * ) malloc( n*d * sizeof(double) );
-  double  * query  = (double * ) malloc( m*d * sizeof(double) );
-  // double  * query  = corpus;
+  double  * query  = corpus;
 
   // double(*X)[d] = (double(*)[d])corpus;
   // double(*Y)[d] = (double(*)[d])query;
@@ -178,18 +170,27 @@ int main(){
   //     printf("]\n");
   //   }
   clock_gettime(CLOCK_MONOTONIC, &start);
-  knnresult knnres = kNN( corpus, query, n, m, d, k );
+  // knnresult knnres1 = distrAllkNN( corpus,  n, d, k );
   clock_gettime(CLOCK_MONOTONIC, &finish);
-      elapsed = (finish.tv_sec - start.tv_sec);
-      elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+  elapsed = (finish.tv_sec - start.tv_sec);
+  elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
 
-      printf("For n=%d , m =%d , d=%d ,k =%d  the time is: %lf seconds! \n",n,m,d,k, elapsed );
+  double elapsed2;
 
+  clock_gettime(CLOCK_MONOTONIC, &start);
+  knnresult knnres2 = kNN( corpus, corpus, n, n, d, k );
+  clock_gettime(CLOCK_MONOTONIC, &finish);
+  elapsed2 = (finish.tv_sec - start.tv_sec);
+  elapsed2 += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
 
+  printf("With Ring :For n=%d , m =%d , d=%d ,k =%d  the time is: %lf seconds! \n",n,m,d,k, elapsed );
+  printf("Serial :For n=%d , m =%d , d=%d ,k =%d  the time is: %lf seconds! \n",n,m,d,k, elapsed2 );
 
-  int isValid = validateResult( knnres, corpus, query, n, m, d, k );
+  // int isValid1 = validateResult( knnres1, corpus, query, n, m, d, k );
+  int isValid2 = validateResult( knnres2, corpus, query, n, m, d, k );
 
-  printf("Tester validation: %s NEIGHBORS\n", STR_CORRECT_WRONG[isValid]);
+  // printf("Tester validation: %s NEIGHBORS\n", STR_CORRECT_WRONG[isValid1]);
+  printf("Tester validation: %s NEIGHBORS\n", STR_CORRECT_WRONG[isValid2]);
 
   free( corpus );
   free( query );

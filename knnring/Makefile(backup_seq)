@@ -22,10 +22,9 @@ SHELL := /bin/bash
 
 # define the C/C++ compiler to use,default here is clang
 CC = gcc-7
-MPICC=mpicc
 
 # define compile-time flags #-Wall
-CFLAGS = -Wall  -O2  #-fcilkplus -fopenmp
+CFLAGS = -Wall -lopenblas -lblas  -O2 -pthread #-fcilkplus -fopenmp
 # CFLAGS =   -pthread -fcilkplus -fopenmp
 # define any directories containing header files
 
@@ -39,7 +38,7 @@ LDFLAGS =-L./lib
 # define any libraries to link into executable:
 #   To ling libusb-1.0 :
 #   LIBS = -lusb-1.0
-LIBS = -lm -lblas -lopenblas -lpthread
+LIBS = -lm -lblas
 
 # define the source file for the library
 SRCLIB = src/knnring
@@ -50,7 +49,7 @@ SRC= lib/knnring
 
 
 # define the different possible executables
-TYPES = sequential synchronous
+TYPES = sequential #openmp cilk pthreads
 
 # # define the executable file  name
 MAIN = main
@@ -58,30 +57,30 @@ MAIN = main
 #
 # The following part of the makefile is generic; it can be used to
 # build any executable just by changing the definitions above
-#s
+#
 
 # # call everytime
 # .PRECIOUS: %.a
 #
 all: lib $(addprefix $(MAIN)_, $(TYPES))
 
-lib:  knnring_sequential.o knnring_synchronous.o
-	ar rcs lib/knnring_sequential.a lib/knnring_sequential.o
-	ar rcs lib/knnring_synchronous.a lib/knnring_synchronous.o
-	rm lib/knnring_sequential.o lib/knnring_synchronous.o
+lib: $(addsuffix .a, $(addprefix $(SRCLIB)_, $(TYPES)))
 
-$(MAIN)_sequential: $(MAIN).c $(SRC)_sequential.a
+$(MAIN)_%: $(MAIN).c $(SRC)_%.a
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LDFLAGS) $(LIBS)
 
-$(MAIN)_synchronous: $(MAIN)_mpi.c $(SRC)_synchronous.a
-	$(MPICC) $(CFLAGS) $(INCLUDES) -o $@ $^ lib/knnring_sequential.a $(LDFLAGS) $(LIBS)
+# this is a suffix replacement rule for building .o's from .c's
+# it uses automatic variables $<: the name of the prerequisite of
+# the rule(a .cpp file) and $@: the name of the target of the rule (a .o file)
 
+#.o.a == (%.a : %.o )
+.o.a:
+	ar rcs $@ $< && mv src/knnring_*.a lib
 
-knnring_sequential.o : src/knnring_sequential.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c src/knnring_sequential.c -o lib/knnring_sequential.o
-
-knnring_synchronous.o : src/knnring_synchronous.c
-	$(MPICC) $(INCLUDES) -c  src/knnring_synchronous.c -o lib/knnring_synchronous.o
+# .c.o == (%.o : %.c )
+# (see the gnu make manual section about automatic variables)
+.c.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
 clean:
 	$(RM) *.o *~ $(addprefix $(MAIN)_, $(TYPES)) lib/knnring_*.a

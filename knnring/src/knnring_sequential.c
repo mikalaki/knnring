@@ -6,6 +6,8 @@
 #include "cblas-openblas.h"
 #include "limits.h"
 
+
+
   //Getting variables to use as specific blas routines
   enum CBLAS_ORDER order;
   enum CBLAS_TRANSPOSE  transx,transy;
@@ -148,24 +150,24 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
   result -> m =m;
   result -> k =k;
 
-/*  //test new D , idx
-  printf(" result NEW D after realloc:\n" );
-  for (int i = 0; i < k; i++) {
-    printf("[ ");
-    for (int  j = 0; j < m; j++) {
-      printf("%lf ",  result-> ndist[i*m+j]);
-    }
-    printf("]\n");
-  }
-    printf("REST idx :\n" );
-  for (int  i = 0; i < k; i++) {
-    printf("[ ");
-    for ( int j = 0; j < m; j++) {
-      printf("%d ",result->nidx[i*m+j]);
-    }
-    printf("]\n");
-  }
-  */
+  // //test new D , idx
+  // printf(" result NEW D after realloc:\n" );
+  // for (int i = 0; i < k; i++) {
+  //   printf("[ ");
+  //   for (int  j = 0; j < m; j++) {
+  //     printf("%lf ",  result-> ndist[i*m+j]);
+  //   }
+  //   printf("]\n");
+  // }
+  //   printf("REST idx :\n" );
+  // for (int  i = 0; i < k; i++) {
+  //   printf("[ ");
+  //   for ( int j = 0; j < m; j++) {
+  //     printf("%d ",result->nidx[i*m+j]);
+  //   }
+  //   printf("]\n");
+  // }
+   /**/
 
 
 
@@ -315,7 +317,14 @@ void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int 
     for(int i=0; i<n ; i++){
       for (int j = 0; j < m; j++) {
         D[i*m+j]=sqrt( xNorms2[i] + euclideanDistances[i*m+j] + yNorms2[j] );
+        ////////////CHESCKS FOR SAME point in X and Y///////////
+        //if we are counting distances between the same point
+        if(D[i*m+j]<=0 ||isnan(D[i*m+j]) ){D[i*m+j] =INFINITY;}
+        //For just getting ,for same  X,Y ,correct in the validator!! (see bellow)
+        // if(D[i*m+j]<=0 ||isnan(D[i*m+j]) ){D[i*m+j] =0;}
       }
+
+
     }
     //free some memory from the heap
     free(euclideanDistances);
@@ -331,16 +340,16 @@ void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int 
       // }
       printf("]\n");
     }
-
-    printf("D 2d:\n" );
-    for ( int i = 0; i < n; i++) {
-      printf("[ ");
-      for (int  j = 0; j < m; j++) {
-        printf("%lf ",D[i*m+j]);
-      }
-      printf("]\n");
-    }
-  */
+  //   */
+  //   printf("D 2d:\n" );
+  //   for ( int i = 0; i < n; i++) {
+  //     printf("[ ");
+  //     for (int  j = 0; j < m; j++) {
+  //       printf("%lf ",D[i*m+j]);
+  //     }
+  //     printf("]\n");
+  //   }
+  // /**/
 
 
 }
