@@ -9,16 +9,13 @@
   //Getting variables to use as specific blas routines
   enum CBLAS_ORDER order;
   enum CBLAS_TRANSPOSE  transx,transy;
-
-  //Functions Declaration
-void ComputeDistancesMatrix(double * D,double * X, double * Y, int n, int m, int d);
-void swap_double(double * xp, double * yp);
-void swap_int(int * xp, int * yp);
-
-
-
-int partition (double * arr,int * idxArr, int low, int high,int ld);
-void sortDistancesAndIdxColumns(double * arr,int * idxArr ,int low, int high,int k,int ld);
+  
+//forward function declarations
+void swap_double				(double* xp, double* yp);
+void swap_int					(int* xp, int* yp);
+void ComputeDistancesMatrix		(double* D, double* X, double* Y, int n, int m, int d);
+int partition 					(double* arr, int* idxArr, int low, int high, int ld);
+void sortDistancesAndIdxColumns	(double* arr, int* idxArr ,int low, int high, int k, int ld);
 
 knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
   //Declaring the matrix of the distances D
@@ -166,22 +163,14 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
     printf("]\n");
   }
   */
-
-
-
-
-
   // free(D);
   // free(idx);
   return *result;
 }
 
-
-
-
-
-void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int d){
-  // D = sqrt(sum(X.^2,2) - 2 * X*Y.' + sum(Y.^2,2).');
+void ComputeDistancesMatrix(double* D ,double* X, double* Y, int n, int m, int d)
+{
+  // Matlab Formula: D = sqrt(sum(X.^2,2) - 2 * X*Y.' + sum(Y.^2,2).');
 
       // // sum(X.^2,2)
       //   //X.^2
@@ -454,3 +443,4 @@ void sortDistancesAndIdxColumns(double * arr,int * idxArr ,int low, int high,int
           sortDistancesAndIdxColumns(arr,idxArr, pi + 1, high,k,ld);
     }
 }
+
