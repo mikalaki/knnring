@@ -1,86 +1,27 @@
-# ####################################################################
-#
-#			  	   C Makefile
-#	   Parallels and Distributed Systems
-#				     Exercise 2
-#
-# Author: Michael Karatzas <mikalaki@ece.auth.gr>
-# 						   <mikalaki@it.auth.gr>
-# Adapted from:
-#  Elearning Examples and edit it to fit the needs of the exercise.
-#
-# ####################################################################
-#
-# 'make'        build executable file 'main'
-# 'make lib'	build the libraries .a
-# 'make clean'  removes all .o and executable files
-#
-# # call everytime
-# .PRECIOUS: %.a
-# define the shell to bash
 SHELL := /bin/bash
 
-# define the C/C++ compiler to use,default here is clang
 CC = gcc-7
-
-# define compile-time flags #-Wall
-CFLAGS = -Wall -lopenblas -lblas  -O2 -pthread #-fcilkplus -fopenmp
-# CFLAGS =   -pthread -fcilkplus -fopenmp
-# define any directories containing header files
-
-INCLUDES = -I./inc
-
-# define library paths in addition to /usr/lib
-#   if I wanted to include libraries not in /usr/lib specify
-#   their path using -Lpath, something like:
-LDFLAGS =-L./lib
-
-# define any libraries to link into executable:
-#   To ling libusb-1.0 :
-#   LIBS = -lusb-1.0
-LIBS = -lm -lblas
-
-# define the source file for the library
-SRCLIB = src/knnring
-
-#define
-SRC= lib/knnring
-
-
-
-# define the different possible executables
-TYPES = sequential #openmp cilk pthreads
-
-# # define the executable file  name
-MAIN = main
-
-#
-# The following part of the makefile is generic; it can be used to
-# build any executable just by changing the definitions above
-#
-
-# # call everytime
-# .PRECIOUS: %.a
-#
-all: lib $(addprefix $(MAIN)_, $(TYPES))
-
-lib: $(addsuffix .a, $(addprefix $(SRCLIB)_, $(TYPES)))
-
-$(MAIN)_%: $(MAIN).c $(SRC)_%.a
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LDFLAGS) $(LIBS)
-
-# this is a suffix replacement rule for building .o's from .c's
-# it uses automatic variables $<: the name of the prerequisite of
-# the rule(a .cpp file) and $@: the name of the target of the rule (a .o file)
-
-#.o.a == (%.a : %.o )
-.o.a:
-	ar rcs $@ $< && mv src/knnring_*.a lib
-
-# .c.o == (%.o : %.c )
-# (see the gnu make manual section about automatic variables)
-.c.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
+MPICC = mpicc
+CFLAGS = -Wall -lopenblas -lblas -O3
+INCLUDES = -I ./inc
 
 clean:
-	$(RM) *.o *~ $(addprefix $(MAIN)_, $(TYPES)) lib/knnring_*.a
+	find ./ -name "*.a" -o -name "*.o" -o -executable -a -type f | xargs rm -f
+	
+	
+
+lib: knnring_sequential.o knnring_synchronous.o #knnring_asynchronous.o
+	ar rcs lib/knnring_sequential.a lib/knnring_sequential.o 
+	ar rcs lib/knnring_mpi.a lib/knnring_synchronous.o lib/knnring_sequential.o
+#~ 	ar rcs lib/knnring_asynchronous.a lib/knnring_asynchronous.o 
+	rm lib/*.o
+	
+knnring_synchronous.o:
+	$(MPICC) $(CFLAGS) $(INCLUDES) -c src/knnring_synchronous.c -o lib/knnring_synchronous.o
+	
+#~ knnring_asynchronous.o:
+#~ 	$(MPICC) $(CFLAGS) $(INCLUDES) -c src/knnring_asynchronous.c -o lib/knnring_asynchronous.o
+
+knnring_sequential.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c src/knnring_sequential.c -o lib/knnring_sequential.o
+
