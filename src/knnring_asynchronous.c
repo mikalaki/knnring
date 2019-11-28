@@ -15,6 +15,22 @@ knnresult distrAllkNN(double* X, int n, int d, int k)
 	myPrev = myRank==0 ? nProcs-1 : myRank-1;
 	myNext = (myRank+1)%nProcs;
 
+	/* Y will be the query set. This will be fixed for every process.
+	 * corpus[0] and corpus[1] are the corpus sets that are being exchanged.
+	 * The sets are used alternateviy; One of them is being sent and at
+	 * the same time used by kNN, while the other is used for receiving data
+	 * from the previous process. For this, we use the modulo 2 trick.
+	 */
+	double* Y = (double*) malloc(n*d*sizeof(double));
+	memcpy(Y, X, n*d*sizeof(double));
+	double* corpus[2] = {X, NULL};
+	corpus[1] = (double*) malloc(n*d*sizeof(double));
+	
+	// Start sending and receiving at corpus[1] before calling kNN for corpus[0]
+	MPI_Request requests[2];
+	MPI_Isend(corpus[0], n*d, MPI_DOUBLE, myNext, 2019, MPI_COMM_WORLD, &requests[0]);
+	MPI_Irecv(corpus[1], n*d, MPI_DOUBLE, myPrev, MPI_ANY_TAG, MPI_COMM_WORLD, &requests[1]);
+	
 	/* Each process takes care of it's own small query set using the sequential version!
 	 * The sequential vesion assumes that the indexing of the points starts from 0
 	 * This is true only for process 0, and thus correct for sequential implementation.
@@ -23,16 +39,17 @@ knnresult distrAllkNN(double* X, int n, int d, int k)
 	 * Of course, an implementation that doesn't make the above assumption is possible,
 	 * but harder due to the current interface and not part of the assignment.
 	 */
-	double* Y = (double*) malloc(n*d*sizeof(double));
-	memcpy(Y, X, n*d*sizeof(double));
 	knnresult result = kNN(X, Y, n, n, d, k);
 	addToIndexes(&result, n*(myRank>0 ? myRank-1 : nProcs-1) );
 
 	//We need to transfer data in the ring nProcs-1 times
 	for (int i=1; i<nProcs; i++)
 	{
-		MPI_Sendrecv_replace(X, n*d, MPI_DOUBLE, myNext, 2019, myPrev, MPI_ANY_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-		knnresult result2 = kNN(X, Y, n, n, d, k);
+		MPI_Waitall(2, requests, MPI_STATUSES_IGNORE);
+		MPI_Isend(corpus[	 i%2], n*d, MPI_DOUBLE, myNext, 2019, MPI_COMM_WORLD, &requests[0]);
+		MPI_Irecv(corpus[(i+1)%2], n*d, MPI_DOUBLE, myPrev, MPI_ANY_TAG, MPI_COMM_WORLD, &requests[1]);
+
+		knnresult result2 = kNN(corpus[i%2], Y, n, n, d, k);
 		addToIndexes(&result2, n*(myRank-i-1>=0 ? myRank-i-1 : myRank-i-1+nProcs));
 		mergeResultsAndClear(&result, &result2);
 	}
