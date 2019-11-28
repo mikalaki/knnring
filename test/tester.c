@@ -35,9 +35,9 @@ int main()
 
   knnresult knnres = kNN( corpus, query, n, m, d, k );
 
-  int isValidC = validateResultColMajor( knnres, corpus, query, n, m, d, k );
+  int isValidC = validateResult( knnres, corpus, query, n, m, d, k, COLMAJOR );
 
-  int isValidR = validateResultRowMajor( knnres, corpus, query, n, m, d, k );
+  int isValidR = validateResult( knnres, corpus, query, n, m, d, k, ROWMAJOR );
   
   printf("Tester validation: %s NEIGHBORS\n",
          STR_CORRECT_WRONG[isValidC||isValidR]);
