@@ -53,6 +53,20 @@ knnresult distrAllkNN(double* X, int n, int d, int k)
 		addToIndexes(&result2, n*(myRank-i-1>=0 ? myRank-i-1 : myRank-i-1+nProcs));
 		mergeResultsAndClear(&result, &result2);
 	}
+	
+	//The result is ready, compute global min and max before returning
+	double minDist=result.ndist[0*k +0];
+	double maxDist=result.ndist[0*k +k-1];
+	double globalMin, globalMax;
+	for (int i=1; i<n; i++)
+	{
+		if (result.ndist[i*k +0] < minDist) minDist = result.ndist[i*k +0];
+		if (result.ndist[i*k +k-1] > maxDist) maxDist = result.ndist[i*k +k-1];
+	}
+	MPI_Reduce(&minDist, &globalMin, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);
+	MPI_Reduce(&maxDist, &globalMax, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+	if (myRank==0) 
+		printf("This is root (proc num 0) speaking:\n--->Global distances minimum=%lf, maximum=%lf\n",globalMin,globalMax);
 	return result;
 }
 
