@@ -10,8 +10,10 @@ inline void addToIndexes(knnresult* R, int addVal);
 knnresult distrAllkNN(double* X, int n, int d, int k)
 {
 	int nProcs, myRank, myNext, myPrev;
-	MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-	MPI_Comm_size(MPI_COMM_WORLD, &nProcs);
+	MPI_Comm_rank(MPI_COMM_WORLD, &myRank); //get the process ID (rank)
+	MPI_Comm_size(MPI_COMM_WORLD, &nProcs);//get the number of procceses
+
+	//Setting the source and the destination for each procces.
 	myPrev = myRank==0 ? nProcs-1 : myRank-1;
 	myNext = (myRank+1)%nProcs;
 
@@ -45,6 +47,7 @@ void mergeResultsAndClear(knnresult* A, knnresult* B)
 	int* nidx 		= (int*) 	malloc(m*k*sizeof(int));
 	double* ndist	= (double*)	malloc(m*k*sizeof(double));
 
+	//Scanning the two matricies and getting the smallest k distances
 	for (int point=0; point<m; point++)
 		for (int i=0,j=0, neighbor=0; neighbor<k; neighbor++)
 			if (A->ndist[point*k +i] < B->ndist[point*k +j])
@@ -59,14 +62,17 @@ void mergeResultsAndClear(knnresult* A, knnresult* B)
 				ndist[point*k +neighbor] = B->ndist[point*k +j];
 				j++;
 			}
+	//Deallocating memory
 	free(A->nidx);
 	free(A->ndist);
 	free(B->nidx);
 	free(B->ndist);
+	
 	A->nidx  = nidx;
 	A->ndist = ndist;
 }
 
+//Function to add offset to the idx array depending on which part of CorpusAll come from
 inline void addToIndexes(knnresult* R, int addVal)
 {
 	for (int i=0; i<R->m*R->k; i++)

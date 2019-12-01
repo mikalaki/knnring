@@ -16,17 +16,17 @@
 void ComputeDistancesMatrix(double * D,double * X, double * Y, int n, int m, int d);
 void swap_double(double * xp, double * yp);
 void swap_int(int * xp, int * yp);
-
-
-
 int partition (double * arr,int * idxArr, int low, int high,int ld);
 void sortDistancesAndIdxColumns(double * arr,int * idxArr ,int low, int high,int k,int ld);
 
 knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
+
   //Declaring and allocating the matrixes we will need
   double * D= (double * ) malloc( n*m * sizeof(double) );
   int * idx= (int * ) malloc( n*m * sizeof(int) );
+
   knnresult result;
+
   result.ndist =  (double * )malloc(k*m * sizeof(double));
   result.nidx= (int * )malloc(k*m * sizeof(int));
   if( (!D) || (!idx) || (!result.ndist) || (!result.nidx) ){
@@ -37,7 +37,7 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
   result.m =m;
   result.k =k;
 
-  //initialiazing idx values
+  //Initialiazing idx values
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
       idx[i*m+j]=i;
@@ -58,13 +58,11 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
   idx=(int *) realloc(idx,k*m * sizeof(int));
 
 
-  // result-> ndist =  D;
-  // result-> nidx= idx;
+  //Getting the m*K Matrix
   for(int i=0; i < k ; i++){
     for(int j =0 ; j<m ;j++)
       result.ndist[j*k+i]=D[i*m+j];
   }
-
   for(int i=0; i < k ; i++){
     for(int j =0 ; j<m ;j++)
       result.nidx[j*k+i]=idx[i*m+j];
@@ -76,21 +74,21 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
 }
 
 
-
+//Function to calculate distances
 void ComputeDistancesMatrix(double *D,double * X, double * Y, int n, int m, int d){
   // D = sqrt(sum(X.^2,2) - 2 * X*Y.' + sum(Y.^2,2).');
 
-      // -2 * X * Y.'
-      //blas parameters
-      double alpha=-2;
-      double beta=0;
-      int ldx=d;
-      int ldy=d;
-      int ldEd=m;
-      order=CblasRowMajor;
-      transx=CblasNoTrans;
-      transy=CblasTrans;
-      cblas_dgemm(order,transx,transy, n, m, d, alpha, X, ldx, Y, ldy, beta, D, ldEd );
+    // -2 * X * Y.'
+    //blas parameters
+    double alpha=-2;
+    double beta=0;
+    int ldx=d;
+    int ldy=d;
+    int ldEd=m;
+    order=CblasRowMajor;
+    transx=CblasNoTrans;
+    transy=CblasTrans;
+    cblas_dgemm(order,transx,transy, n, m, d, alpha, X, ldx, Y, ldy, beta, D, ldEd );
 
     //Xnorms2 is the variable to store the sum(X.^2,2) elements
     //Ynorms2 is the variable to store the sum(Y.^2,2)) elements
