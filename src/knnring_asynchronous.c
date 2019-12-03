@@ -24,10 +24,10 @@ knnresult distrAllkNN(double* X, int n, int d, int k)
 	 * the same time used by kNN, while the other is used for receiving data
 	 * from the previous process. For this, we use the modulo 2 trick.
 	 */
-	double* Y = (double*) malloc(n*d*sizeof(double));
+	double* Y = (double*) malloc( (size_t)n*d*sizeof(double));
 	memcpy(Y, X, n*d*sizeof(double));
 	double* corpus[2] = {X, NULL};
-	corpus[1] = (double*) malloc(n*d*sizeof(double));
+	corpus[1] = (double*) malloc( (size_t)n*d*sizeof(double));
 
 	// Start sending and receiving at corpus[1] before calling kNN for corpus[0]
 	MPI_Request requests[2];
@@ -79,8 +79,8 @@ knnresult distrAllkNN(double* X, int n, int d, int k)
 void mergeResultsAndClear(knnresult* A, knnresult* B)
 {
 	int k=A->k, m=A->m;
-	int* nidx 		= (int*) 	malloc(m*k*sizeof(int));
-	double* ndist	= (double*)	malloc(m*k*sizeof(double));
+	int* nidx 		= (int*) 	malloc( (size_t)m*k*sizeof(int));
+	double* ndist	= (double*)	malloc( (size_t)m*k*sizeof(double));
 
 	//Scanning the two matricies and getting the smallest k distances
 	for (int point=0; point<m; point++)

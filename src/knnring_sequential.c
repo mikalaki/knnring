@@ -22,13 +22,11 @@ void sortDistancesAndIdxColumns(double * arr,int * idxArr ,int low, int high,int
 knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
 
   //Declaring and allocating the matrixes we will need
-  double * D= (double * ) malloc( n*m * sizeof(double) );
-  int * idx= (int * ) malloc( n*m * sizeof(int) );
-
+  double * D= (double * ) malloc( (size_t)n*m * sizeof(double) );
+  int * idx= (int * ) malloc( (size_t)n*m * sizeof(int) );
   knnresult result;
-
-  result.ndist =  (double * )malloc(k*m * sizeof(double));
-  result.nidx= (int * )malloc(k*m * sizeof(int));
+  result.ndist =  (double * )malloc( (size_t)k*m * sizeof(double));
+  result.nidx= (int * )malloc( (size_t)k*m * sizeof(int));
   if( (!D) || (!idx) || (!result.ndist) || (!result.nidx) ){
     printf("Couldn't Allocate Memory!\n" );
     exit(1);
@@ -54,8 +52,8 @@ knnresult kNN(double * X, double * Y, int n, int m, int d, int k){
   }
 
   //reallocating D and idx , in smaller sizes , to avoid excessive use of memory
-  D= (double *) realloc(D,k*m * sizeof(double));
-  idx=(int *) realloc(idx,k*m * sizeof(int));
+  D= (double *) realloc(D, (size_t)k*m * sizeof(double));
+  idx=(int *) realloc(idx, (size_t)k*m * sizeof(int));
 
 
   //Getting the m*K Matrix

@@ -25,7 +25,7 @@ knnresult distrAllkNN(double* X, int n, int d, int k)
 	 * Of course, an implementation that doesn't make the above assumption is possible,
 	 * but harder due to the current interface and not part of the assignment.
 	 */
-	double* Y = (double*) malloc(n*d*sizeof(double));
+	double* Y = (double*) malloc( (size_t)n*d*sizeof(double) );
 	memcpy(Y, X, n*d*sizeof(double));
 	knnresult result = kNN(X, Y, n, n, d, k);
 	addToIndexes(&result, n*(myRank>0 ? myRank-1 : nProcs-1) );
@@ -44,8 +44,8 @@ knnresult distrAllkNN(double* X, int n, int d, int k)
 void mergeResultsAndClear(knnresult* A, knnresult* B)
 {
 	int k=A->k, m=A->m;
-	int* nidx 		= (int*) 	malloc(m*k*sizeof(int));
-	double* ndist	= (double*)	malloc(m*k*sizeof(double));
+	int* nidx 		= (int*) 	malloc( (size_t)m*k*sizeof(int) );
+	double* ndist	= (double*)	malloc( (size_t)m*k*sizeof(double) );
 
 	//Scanning the two matricies and getting the smallest k distances
 	for (int point=0; point<m; point++)
